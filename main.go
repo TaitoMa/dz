@@ -1,9 +1,7 @@
 package main
 
-import "fmt"
+import converter "demo/app-1/1_converter"
 
 func main() {
-	a := 123
-	fmt.Println(&a)
-	fmt.Println("Hello World")
+	converter.Converter()
 }
