@@ -1,7 +1,16 @@
 package main
 
-import converter "demo/app-1/1_converter"
+import (
+	"fmt"
+)
 
 func main() {
-	converter.Converter()
+	const USDinEUR float64 = 0.85
+	const USDinRUB float64 = 78.6
+
+	const EUR float64 = 15
+
+	const EURtoRUB = EUR / USDinEUR * USDinRUB
+
+	fmt.Println(EURtoRUB)
 }
