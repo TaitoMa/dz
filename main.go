@@ -1,9 +1,14 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+)
 
 func main() {
-	a := 123
-	fmt.Println(&a)
-	fmt.Println("Hello World")
+	const USDinEUR float64 = 0.85
+	const USDinRUB float64 = 78.6
+
+	const EURtoRUB = USDinRUB / USDinEUR
+
+	fmt.Println(EURtoRUB)
 }
