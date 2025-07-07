@@ -17,12 +17,12 @@ func main() {
 	fmt.Println(number)
 }
 
-func getNumber() int {
-	var n int
+func getNumber() float64 {
+	var n float64
 	fmt.Scan(&n)
 	return n
 }
 
-func calculateCurrency(x int, currency1 string, currency2 string) {
+func calculateCurrency(x float64, currency1 string, currency2 string) {
 
 }
