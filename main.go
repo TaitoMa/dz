@@ -4,14 +4,7 @@ import (
 	"fmt"
 )
 
-const (
-	USD = "USD"
-	EUR = "EUR"
-	RUB = "RUB"
-)
-
 func main() {
-
 	currencyFrom := getCurrency("")
 	money := getNumber()
 	currencyTo := getCurrency(currencyFrom)
@@ -55,28 +48,17 @@ func getNumber() float64 {
 	}
 }
 
+type currency map[string]map[string]float64
+
 func calculateCurrency(x float64, currency1 string, currency2 string) float64 {
-	const USDinEUR float64 = 0.85
-	const USDinRUB float64 = 78.6
-
-	const EURtoRUB = USDinRUB / USDinEUR
-
-	var result float64
-
-	switch {
-	case currency1 == USD && currency2 == EUR:
-		result = x * USDinEUR
-	case currency1 == USD && currency2 == RUB:
-		result = x * USDinRUB
-	case currency1 == EUR && currency2 == USD:
-		result = x / USDinEUR
-	case currency1 == EUR && currency2 == RUB:
-		result = x * EURtoRUB
-	case currency1 == RUB && currency2 == EUR:
-		result = x / EURtoRUB
-	case currency1 == RUB && currency2 == USD:
-		result = x / USDinRUB
+	currencyMap := currency{
+		"USD": {"EUR": 0.85, "RUB": 78.6},
+		"EUR": {"USD": 1.17, "RUB": 91},
+		"RUB": {"EUR": 1 / 91, "USD": 1 / 78.6},
 	}
+
+	result := x * currencyMap[currency1][currency2]
+
 	return result
 }
 
