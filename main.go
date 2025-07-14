@@ -74,4 +74,18 @@ func calculateCurrency(x float64, currency1 string, currency2 string) float64 {
 			println("Recover", r)
 		}
 	}()
+
+	Удалить 3й элемент
+	s = append(s[:2], s[3:]...)
+
+
+	type account struct {
+		login    string
+		password string
+		url      string
+	}
+
+	func (acc account) outputPassword() string {
+		return acc.password
+}
 */
