@@ -9,7 +9,13 @@ func main() {
 	money := getNumber()
 	currencyTo := getCurrency(currencyFrom)
 
-	result := calculateCurrency(money, currencyFrom, currencyTo)
+	currencyMap := TCurrencyMap{
+		"USD": {"EUR": 0.85, "RUB": 78.6},
+		"EUR": {"USD": 1.17, "RUB": 91},
+		"RUB": {"EUR": 1 / 91, "USD": 1 / 78.6},
+	}
+
+	result := calculateCurrency(money, currencyFrom, currencyTo, &currencyMap)
 
 	fmt.Println(result)
 }
@@ -48,16 +54,10 @@ func getNumber() float64 {
 	}
 }
 
-type currency map[string]map[string]float64
+type TCurrencyMap map[string]map[string]float64
 
-func calculateCurrency(x float64, currency1 string, currency2 string) float64 {
-	currencyMap := currency{
-		"USD": {"EUR": 0.85, "RUB": 78.6},
-		"EUR": {"USD": 1.17, "RUB": 91},
-		"RUB": {"EUR": 1 / 91, "USD": 1 / 78.6},
-	}
-
-	result := x * currencyMap[currency1][currency2]
+func calculateCurrency(x float64, currency1 string, currency2 string, currencyMap *TCurrencyMap) float64 {
+	result := x * (*currencyMap)[currency1][currency2]
 
 	return result
 }
