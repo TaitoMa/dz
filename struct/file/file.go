@@ -1,5 +1,11 @@
 package file
 
-func ReadFile() {}
+import "fmt"
 
-func WriteFile() {}
+func ReadFile() {
+	fmt.Println("Here will be reading file")
+}
+
+func WriteFile() {
+	fmt.Println("Here will be writing file")
+}
