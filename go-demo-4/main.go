@@ -1,89 +1,75 @@
 package main
 
 import (
-	"errors"
 	"fmt"
-	"math/rand/v2"
-	"net/url"
-	"time"
+	"go-demo-4/account"
 )
 
-type account struct {
-	login    string
-	password string
-	url      string
-}
-
-type accountWithTimeStamp struct {
-	createdAt time.Time
-	updatedAt time.Time
-	account
-}
-
-//func newAccount(login, password, urlString string) (*account, error) {
-//	_, err := url.ParseRequestURI(urlString)
-//	if login == "" {
-//		return nil, errors.New("EMPTY_LOGIN")
-//	}
-//	if err != nil {
-//		return nil, errors.New("INVALID_URL")
-//	}
-//	newAcc := &account{login: login, password: password, url: urlString}
-//	if password == "" {
-//		newAcc.generatePassword(12)
-//	}
-//
-//	return newAcc, nil
-//}
-
-func newAccountWithTimeStamp(login, password, urlString string) (*accountWithTimeStamp, error) {
-	_, err := url.ParseRequestURI(urlString)
-	if login == "" {
-		return nil, errors.New("EMPTY_LOGIN")
-	}
-	if err != nil {
-		return nil, errors.New("INVALID_URL")
-	}
-	newAcc := &accountWithTimeStamp{
-		account: account{
-			login:    login,
-			password: password,
-			url:      urlString,
-		},
-		createdAt: time.Now(),
-		updatedAt: time.Now(),
-	}
-	if password == "" {
-		newAcc.generatePassword(12)
-	}
-
-	return newAcc, nil
-}
-
-func (acc *account) generatePassword(n int) {
-	res := make([]rune, n)
-	for i := range res {
-		res[i] = letterRunes[rand.IntN(len(letterRunes))]
-	}
-	acc.password = string(res)
-}
-
-func (acc *account) outputPassword() string {
-	return acc.password
-}
-
-var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXY1234")
-
 func main() {
+	fmt.Println("___Менеджер паролей___\n")
+	vault := account.NewVault()
+
+Menu:
+	for {
+		menuItem := getMenu()
+		switch menuItem {
+		case 1:
+			createAccount(vault)
+		case 2:
+			findAccount(vault)
+		case 3:
+			deleteAccount(vault)
+		default:
+			break Menu
+		}
+	}
+}
+
+func deleteAccount(vault *account.Vault) {
+
+}
+
+func findAccount(vault *account.Vault) {
+	fmt.Println("Введите URL для поиска")
+	var url string
+	fmt.Scan(&url)
+
+	accounts := vault.FindAccount(url)
+
+	for _, acc := range accounts {
+		acc.OutputPassword()
+	}
+}
+
+func getMenu() int {
+	fmt.Println("Выберите вариант")
+	fmt.Println("1. Создать аккаунт")
+	fmt.Println("2. Найти аккаунт")
+	fmt.Println("3. Удалить аккаунт")
+	fmt.Println("4. Выход")
+	var n int
+	for {
+		_, err := fmt.Scan(&n)
+		if err != nil || n < 1 || n > 4 {
+			fmt.Println("Ошибка ввода")
+			continue
+		}
+		break
+	}
+
+	return n
+}
+
+func createAccount(vault *account.Vault) {
 	login := promptData("Введите логин")
 	password := promptData("Введите пароль")
 	promptUrl := promptData("Введите URL")
-	myAccount, err := newAccountWithTimeStamp(login, password, promptUrl)
+	myAccount, err := account.NewAccount(login, password, promptUrl)
 	if err != nil {
 		fmt.Println("Неверный формат урла или логина")
 		return
 	}
-	fmt.Println(*myAccount)
+	vault.AddAccount(*myAccount)
 }
 
 func promptData(prompt string) string {

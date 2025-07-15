@@ -87,5 +87,8 @@ func calculateCurrency(x float64, currency1 string, currency2 string) float64 {
 
 	func (acc account) outputPassword() string {
 		return acc.password
-}
+	}
+
+	go mod tidy //удалит/добавит неиспользуемые зависимтости
+
 */
