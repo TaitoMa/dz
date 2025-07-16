@@ -28,8 +28,10 @@ func (list *BinList) BinListToBytes() ([]byte, error) {
 }
 
 func (list *BinList) ReadBinListFromFile() ([]byte, error) {
-	data := storage.ReadFile("binList.json")
-
+	data, err := storage.ReadFile("binList.json")
+	if err != nil {
+		return nil, err
+	}
 	return data, nil
 }
 
