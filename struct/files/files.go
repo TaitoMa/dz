@@ -20,17 +20,18 @@ func ReadFile(name string) ([]byte, error) {
 	return data, nil
 }
 
-func WriteFile(content []byte, name string) {
+func WriteFile(content []byte, name string) error {
 	file, err := os.Create(name)
 	if err != nil {
 		color.Red(err.Error(), "Writing"+name)
-		return
+		return err
 	}
 	_, err = file.Write(content)
 	if err != nil {
 		color.Red(err.Error(), "Writing"+name)
-		return
+		return err
 	}
 	color.Green("Файл записан")
 	defer file.Close()
+	return nil
 }
