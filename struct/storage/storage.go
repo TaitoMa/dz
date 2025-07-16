@@ -1,7 +1,15 @@
 package storage
 
-import "fmt"
+import (
+	"struct/files"
+)
 
-func SomeStorageFunc() {
-	fmt.Println("Storage func")
+func SaveFile(content []byte, name string) {
+	files.WriteFile(content, name)
+}
+
+func ReadFile(name string) []byte {
+	content, _ := files.ReadFile(name)
+
+	return content
 }

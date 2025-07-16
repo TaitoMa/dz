@@ -3,7 +3,7 @@ package bins
 import (
 	"encoding/json"
 	"github.com/fatih/color"
-	"struct/files"
+	"struct/storage"
 )
 
 type BinList struct {
@@ -28,11 +28,7 @@ func (list *BinList) BinListToBytes() ([]byte, error) {
 }
 
 func (list *BinList) ReadBinListFromFile() ([]byte, error) {
-	data, err := files.ReadFile("binList.json")
-	if err != nil {
-		color.Red(err.Error(), "ReadBinListFromFile")
-		return nil, err
-	}
+	data := storage.ReadFile("binList.json")
 
 	return data, nil
 }
@@ -43,5 +39,5 @@ func (list *BinList) WriteBinListToFile() {
 		color.Red(err.Error(), "WriteBinListToFile")
 		return
 	}
-	files.WriteFile(byteBinList, "binList.json")
+	storage.SaveFile(byteBinList, "binList.json")
 }

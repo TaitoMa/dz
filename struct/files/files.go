@@ -8,7 +8,7 @@ import (
 )
 
 func ReadFile(name string) ([]byte, error) {
-	if !strings.Contains(name, ".json") {
+	if !strings.HasSuffix(name, ".json") {
 		color.Red("Файл должен быть .json")
 		return nil, errors.New("file name not contains .json")
 	}
