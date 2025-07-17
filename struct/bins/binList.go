@@ -7,7 +7,7 @@ import (
 )
 
 type BinList struct {
-	bins []*Bin
+	Bins []*Bin `json:"bins"`
 }
 
 func NewBinList(bins []*Bin) *BinList {
@@ -15,7 +15,7 @@ func NewBinList(bins []*Bin) *BinList {
 	for i, bin := range bins {
 		list[i] = bin
 	}
-	return &BinList{bins: list}
+	return &BinList{Bins: list}
 }
 
 func (list *BinList) BinListToBytes() ([]byte, error) {
