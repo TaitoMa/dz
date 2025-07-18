@@ -3,19 +3,31 @@ package bins
 import (
 	"encoding/json"
 	"github.com/fatih/color"
-	"struct/storage"
 )
 
+type Db interface {
+	Read() ([]byte, error)
+	Write([]byte) error
+}
 type BinList struct {
 	Bins []*Bin `json:"bins"`
 }
 
-func NewBinList(bins []*Bin) *BinList {
+type BinListWithDb struct {
+	BinList
+	db Db
+}
+
+func NewBinList(db Db, bins []*Bin) *BinListWithDb {
 	list := make([]*Bin, len(bins))
 	for i, bin := range bins {
 		list[i] = bin
 	}
-	return &BinList{Bins: list}
+	return &BinListWithDb{
+		BinList: BinList{
+			Bins: list,
+		},
+		db: db}
 }
 
 func (list *BinList) BinListToBytes() ([]byte, error) {
@@ -27,19 +39,25 @@ func (list *BinList) BinListToBytes() ([]byte, error) {
 	return data, nil
 }
 
-func (list *BinList) ReadBinListFromFile() ([]byte, error) {
-	data, err := storage.ReadFile("binList.json")
+func (list *BinListWithDb) ReadBinListFromFile() ([]byte, error) {
+	data, err := list.db.Read()
+	//data, err := storage.ReadFile()
 	if err != nil {
 		return nil, err
 	}
 	return data, nil
 }
 
-func (list *BinList) WriteBinListToFile() {
+func (list *BinListWithDb) WriteBinListToFile() {
 	byteBinList, err := list.BinListToBytes()
 	if err != nil {
 		color.Red(err.Error(), "WriteBinListToFile")
 		return
 	}
-	storage.SaveFile(byteBinList, "binList.json")
+	err = list.db.Write(byteBinList)
+	if err != nil {
+		color.Red(err.Error(), "WriteBinListToFile")
+		return
+	}
+	//storage.WriteFile(byteBinList, list.db.Filename)
 }
