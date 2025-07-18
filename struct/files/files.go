@@ -7,12 +7,22 @@ import (
 	"strings"
 )
 
-func ReadFile(name string) ([]byte, error) {
-	if !strings.HasSuffix(name, ".json") {
+type JsonDb struct {
+	Filename string
+}
+
+func NewJsonDb(name string) *JsonDb {
+	return &JsonDb{
+		Filename: name,
+	}
+}
+
+func (db *JsonDb) Read() ([]byte, error) {
+	if !strings.HasSuffix(db.Filename, ".json") {
 		color.Red("Файл должен быть .json")
 		return nil, errors.New("file name not contains .json")
 	}
-	data, err := os.ReadFile(name)
+	data, err := os.ReadFile(db.Filename)
 	if err != nil {
 		color.Red(err.Error())
 		return nil, err
@@ -20,15 +30,15 @@ func ReadFile(name string) ([]byte, error) {
 	return data, nil
 }
 
-func WriteFile(content []byte, name string) error {
-	file, err := os.Create(name)
+func (db *JsonDb) Write(content []byte) error {
+	file, err := os.Create(db.Filename)
 	if err != nil {
-		color.Red(err.Error(), "Writing"+name)
+		color.Red(err.Error(), "Writing"+db.Filename)
 		return err
 	}
 	_, err = file.Write(content)
 	if err != nil {
-		color.Red(err.Error(), "Writing"+name)
+		color.Red(err.Error(), "Writing"+db.Filename)
 		return err
 	}
 	color.Green("Файл записан")
