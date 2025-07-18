@@ -3,43 +3,73 @@ package account
 import (
 	"encoding/json"
 	"github.com/fatih/color"
-	"go-demo-4/files"
 	"strings"
 	"time"
 )
+
+type ByteReader interface {
+	Read() ([]byte, error)
+}
+
+type ByteWriter interface {
+	Write([]byte)
+}
+
+type Db interface {
+	ByteReader
+	ByteWriter
+}
 
 type Vault struct {
 	Accounts  []Account `json:"accounts"`
 	UpdatedAt time.Time `json:"updatedAt"`
 }
 
-func NewVault() *Vault {
-	file, err := files.ReadFile("data.json")
+type VaultWithDb struct {
+	Vault
+	db Db
+}
+
+func NewVault(db Db) *VaultWithDb {
+	file, err := db.Read()
 	if err != nil {
-		return &Vault{
-			Accounts:  []Account{},
-			UpdatedAt: time.Now(),
+		return &VaultWithDb{
+			Vault: Vault{
+				Accounts:  []Account{},
+				UpdatedAt: time.Now(),
+			},
+			db: db,
 		}
 	}
 	var vault Vault
 	err = json.Unmarshal(file, &vault)
 	if err != nil {
 		color.Red(err.Error(), "1")
+		return &VaultWithDb{
+			Vault: Vault{
+				Accounts:  []Account{},
+				UpdatedAt: time.Now(),
+			},
+			db: db,
+		}
 	}
-	return &vault
+	return &VaultWithDb{
+		Vault: vault,
+		db:    db,
+	}
 }
 
-func (vault *Vault) AddAccount(acc Account) {
+func (vault *VaultWithDb) AddAccount(acc Account) {
 	vault.Accounts = append(vault.Accounts, acc)
 	vault.UpdatedAt = time.Now()
-	data, err := vault.ToBytes()
+	data, err := vault.Vault.ToBytes()
 	if err != nil {
 		color.Red(err.Error(), "2")
 	}
-	files.WriteFile(data, "data.json")
+	vault.db.Write(data)
 }
 
-func (vault *Vault) FindAccount(url string) []Account {
+func (vault *VaultWithDb) FindAccount(url string) []Account {
 	accounts := []Account{}
 	for _, account := range vault.Accounts {
 		isMatched := strings.Contains(account.Url, url)
@@ -51,7 +81,7 @@ func (vault *Vault) FindAccount(url string) []Account {
 	return accounts
 }
 
-func (vault *Vault) DeleteAccount(url string) bool {
+func (vault *VaultWithDb) DeleteAccount(url string) bool {
 	accounts := []Account{}
 	isDeleted := false
 	for _, account := range vault.Accounts {
@@ -62,12 +92,13 @@ func (vault *Vault) DeleteAccount(url string) bool {
 		}
 		isDeleted = true
 	}
+	db := vault.db
 	vault.UpdatedAt = time.Now()
-	data, err := vault.ToBytes()
+	data, err := vault.Vault.ToBytes()
 	if err != nil {
 		color.Red(err.Error(), "2")
 	}
-	files.WriteFile(data, "data.json")
+	db.Write(data)
 
 	return isDeleted
 }
