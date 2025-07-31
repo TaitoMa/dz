@@ -2,9 +2,11 @@ package main
 
 import (
 	"fmt"
+	"github.com/joho/godotenv"
 	"go-demo-4/account"
-	"go-demo-4/cloud"
+	"go-demo-4/encrypter"
 	"go-demo-4/files"
+	"log"
 	"strings"
 )
 
@@ -34,11 +36,16 @@ func menuCounter() func() {
 
 func main() {
 	fmt.Println("___Менеджер паролей___\n")
-	db := files.NewJsonDb("data.json")
-	cloudDb := cloud.NewCloudDb("https://check.com")
-	vault := account.NewVault(db)
-	vault1 := account.NewVault(cloudDb)
-	fmt.Println(vault1)
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	db := files.NewJsonDb("data.vault")
+	//cloudDb := cloud.NewCloudDb("https://check.com")
+	vault := account.NewVault(db, *encrypter.NewEncrypter())
+	//vault1 := account.NewVault(cloudDb)
+	//fmt.Println(vault1)
 	counter := menuCounter()
 Menu:
 	for {

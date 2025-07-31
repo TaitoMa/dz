@@ -3,6 +3,8 @@ package account
 import (
 	"encoding/json"
 	"github.com/fatih/color"
+	"go-demo-4/encrypter"
+	"go-demo-4/output"
 	"strings"
 	"time"
 )
@@ -27,10 +29,11 @@ type Vault struct {
 
 type VaultWithDb struct {
 	Vault
-	db Db
+	db  Db
+	enc encrypter.Encrypter
 }
 
-func NewVault(db Db) *VaultWithDb {
+func NewVault(db Db, enc encrypter.Encrypter) *VaultWithDb {
 	file, err := db.Read()
 	if err != nil {
 		return &VaultWithDb{
@@ -38,11 +41,13 @@ func NewVault(db Db) *VaultWithDb {
 				Accounts:  []Account{},
 				UpdatedAt: time.Now(),
 			},
-			db: db,
+			db:  db,
+			enc: enc,
 		}
 	}
+	data := enc.Decrypt(file)
 	var vault Vault
-	err = json.Unmarshal(file, &vault)
+	err = json.Unmarshal(data, &vault)
 	if err != nil {
 		color.Red(err.Error(), "1")
 		return &VaultWithDb{
@@ -50,23 +55,20 @@ func NewVault(db Db) *VaultWithDb {
 				Accounts:  []Account{},
 				UpdatedAt: time.Now(),
 			},
-			db: db,
+			db:  db,
+			enc: enc,
 		}
 	}
 	return &VaultWithDb{
 		Vault: vault,
 		db:    db,
+		enc:   enc,
 	}
 }
 
 func (vault *VaultWithDb) AddAccount(acc Account) {
 	vault.Accounts = append(vault.Accounts, acc)
-	vault.UpdatedAt = time.Now()
-	data, err := vault.Vault.ToBytes()
-	if err != nil {
-		color.Red(err.Error(), "2")
-	}
-	vault.db.Write(data)
+	vault.save()
 }
 
 func (vault *VaultWithDb) FindAccount(str string, fn func(Account, string) bool) []Account {
@@ -92,17 +94,22 @@ func (vault *VaultWithDb) DeleteAccount(url string) bool {
 		}
 		isDeleted = true
 	}
-	db := vault.db
-	vault.UpdatedAt = time.Now()
-	data, err := vault.Vault.ToBytes()
-	if err != nil {
-		color.Red(err.Error(), "2")
-	}
-	db.Write(data)
+
+	vault.save()
 
 	return isDeleted
 }
 
 func (vault *Vault) ToBytes() ([]byte, error) {
 	return json.Marshal(vault)
+}
+
+func (vault *VaultWithDb) save() {
+	vault.UpdatedAt = time.Now()
+	data, err := vault.Vault.ToBytes()
+	encData := vault.enc.Encrypt(data)
+	if err != nil {
+		output.PrintError(err)
+	}
+	vault.db.Write(encData)
 }
