@@ -1,93 +1,116 @@
 package main
 
 import (
-	"errors"
 	"fmt"
-	"math/rand/v2"
-	"net/url"
-	"time"
+	"github.com/joho/godotenv"
+	"go-demo-4/account"
+	"go-demo-4/encrypter"
+	"go-demo-4/files"
+	"log"
+	"strings"
 )
 
-type account struct {
-	login    string
-	password string
-	url      string
+var menu = map[string]func(db *account.VaultWithDb){
+	"1": createAccount,
+	"2": findAccount,
+	"3": findAccountByLogin,
+	"4": deleteAccount,
 }
 
-type accountWithTimeStamp struct {
-	createdAt time.Time
-	updatedAt time.Time
-	account
+var menuVariants = []string{
+	"1. Создать аккаунт",
+	"2. Найти аккаунт по URL",
+	"3. Найти аккаунт по Login",
+	"4. Удалить аккаунт",
+	"5. Выход",
+	"Выберите вариант",
 }
 
-//func newAccount(login, password, urlString string) (*account, error) {
-//	_, err := url.ParseRequestURI(urlString)
-//	if login == "" {
-//		return nil, errors.New("EMPTY_LOGIN")
-//	}
-//	if err != nil {
-//		return nil, errors.New("INVALID_URL")
-//	}
-//	newAcc := &account{login: login, password: password, url: urlString}
-//	if password == "" {
-//		newAcc.generatePassword(12)
-//	}
-//
-//	return newAcc, nil
-//}
-
-func newAccountWithTimeStamp(login, password, urlString string) (*accountWithTimeStamp, error) {
-	_, err := url.ParseRequestURI(urlString)
-	if login == "" {
-		return nil, errors.New("EMPTY_LOGIN")
+func menuCounter() func() {
+	count := 0
+	return func() {
+		count++
+		fmt.Println(count)
 	}
-	if err != nil {
-		return nil, errors.New("INVALID_URL")
-	}
-	newAcc := &accountWithTimeStamp{
-		account: account{
-			login:    login,
-			password: password,
-			url:      urlString,
-		},
-		createdAt: time.Now(),
-		updatedAt: time.Now(),
-	}
-	if password == "" {
-		newAcc.generatePassword(12)
-	}
-
-	return newAcc, nil
 }
-
-func (acc *account) generatePassword(n int) {
-	res := make([]rune, n)
-	for i := range res {
-		res[i] = letterRunes[rand.IntN(len(letterRunes))]
-	}
-	acc.password = string(res)
-}
-
-func (acc *account) outputPassword() string {
-	return acc.password
-}
-
-var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXY1234")
 
 func main() {
+	fmt.Println("___Менеджер паролей___\n")
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	db := files.NewJsonDb("data.vault")
+	//cloudDb := cloud.NewCloudDb("https://check.com")
+	vault := account.NewVault(db, *encrypter.NewEncrypter())
+	//vault1 := account.NewVault(cloudDb)
+	//fmt.Println(vault1)
+	counter := menuCounter()
+Menu:
+	for {
+		counter()
+		menuItem := promptData(menuVariants...)
+		menuFunc := menu[menuItem]
+		if menuFunc == nil {
+			break Menu
+		}
+		menuFunc(vault)
+	}
+}
+
+func deleteAccount(vault *account.VaultWithDb) {
+
+}
+
+func findAccount(vault *account.VaultWithDb) {
+	fmt.Println("Введите URL для поиска")
+	var url string
+	fmt.Scan(&url)
+
+	accounts := vault.FindAccount(url, func(acc account.Account, str string) bool {
+		return strings.Contains(acc.Url, str)
+	})
+
+	for _, acc := range accounts {
+		acc.OutputPassword()
+	}
+}
+func findAccountByLogin(vault *account.VaultWithDb) {
+	fmt.Println("Введите Login для поиска")
+	var login string
+	fmt.Scan(&login)
+
+	accounts := vault.FindAccount(login, func(acc account.Account, str string) bool {
+		return strings.Contains(acc.Login, str)
+	})
+
+	for _, acc := range accounts {
+		acc.OutputPassword()
+	}
+}
+
+func createAccount(vault *account.VaultWithDb) {
 	login := promptData("Введите логин")
 	password := promptData("Введите пароль")
 	promptUrl := promptData("Введите URL")
-	myAccount, err := newAccountWithTimeStamp(login, password, promptUrl)
+	myAccount, err := account.NewAccount(login, password, promptUrl)
 	if err != nil {
 		fmt.Println("Неверный формат урла или логина")
 		return
 	}
-	fmt.Println(*myAccount)
+	vault.AddAccount(*myAccount)
 }
 
-func promptData(prompt string) string {
-	fmt.Println(prompt)
+// func promptData[T any](prompt []T) string {
+func promptData(prompt ...string) string {
+	for i, p := range prompt {
+		if i == len(prompt)-1 {
+			fmt.Printf("%v: ", p)
+		} else {
+			fmt.Println(p)
+		}
+	}
 	var res string
 	fmt.Scan(&res)
 	return res
