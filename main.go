@@ -91,4 +91,24 @@ func calculateCurrency(x float64, currency1 string, currency2 string, currencyMa
 
 	go mod tidy //удалит/добавит неиспользуемые зависимтости
 
+
+	name := flag.String("name", "default value", "Имя")
+	age := flag.Bool("isAdmin", false, "admin") // go run . --isAdmin --name="Aaaa"
+	flag.Parse()
+	fmt.Println(*name)
+	fmt.Println(*age)
+
+
+
+
+	//	r := strings.NewReader("Привет я поток")
+	//	block := make([]byte, 4)
+	//while:
+	//	for {
+	//		_, err := r.Read(block)
+	//		fmt.Printf("%q\n", block)
+	//		if err == io.EOF {
+	//			break while
+	//		}
+	//	}
 */
