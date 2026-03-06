@@ -5,6 +5,9 @@ import (
 	"struct/config"
 )
 
+type Methods struct {
+}
+
 func SomeApiFunc() {
 	fmt.Println("Api func")
 	cfg := config.NewConfig()

@@ -27,7 +27,8 @@ func NewBinList(db Db, bins []*Bin) *BinListWithDb {
 		BinList: BinList{
 			Bins: list,
 		},
-		db: db}
+		db: db,
+	}
 }
 
 func (list *BinList) BinListToBytes() ([]byte, error) {
